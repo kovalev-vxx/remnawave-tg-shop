@@ -18,3 +18,11 @@ locales/ru_backup.json
 locales/en_backup.json
 db/models_old.py
 .venv
+
+# Игнорировать всё в app-data
+app-data/*
+
+# Но НЕ игнорировать .gitkeep
+!app-data/.gitkeep
+
+.DS_Store

@@ -1,0 +1,3 @@
+{$CADDY_URL} {
+    reverse_proxy remnawave-tg-shop:8080
+}
