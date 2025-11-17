@@ -95,6 +95,37 @@ class JsonI18n:
                 f"General error formatting i18n key '{key}' (lang: {effective_lang_code}): {e_general_format}. Original text: '{text}'",
                 exc_info=True)
             return text
+    
+    def plural(self, lang_code: Optional[str], n: int, forms_key: str) -> str:
+        """
+        Возвращает корректную форму слова с числом.
+        forms_key — ключ в JSON с формами слова (список из 2 или 3 форм)
+        """
+        # Определяем язык с fallback
+        effective_lang = lang_code if lang_code in self.locales_data else self.default_lang
+        lang_data = self.locales_data.get(effective_lang, {})
+
+        forms = lang_data.get(forms_key)
+        if not forms:
+            logging.warning(
+                f"No plural forms found for key '{forms_key}' in lang '{effective_lang}'. Using raw number."
+            )
+            return str(n)
+
+        # Определяем форму в зависимости от языка
+        if effective_lang == "ru":
+            # 3 формы: 1, 2-4, 5+
+            if n % 10 == 1 and n % 100 != 11:
+                form = forms[0]
+            elif 2 <= n % 10 <= 4 and (n % 100 < 10 or n % 100 >= 20):
+                form = forms[1]
+            else:
+                form = forms[2]
+        else:
+            # Английский: 1 — singular, все остальные — plural
+            form = forms[0] if n == 1 else forms[1]
+
+        return f"{n} {form}"
 
 
 _i18n_instance_singleton: Optional[JsonI18n] = None

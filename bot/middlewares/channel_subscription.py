@@ -114,6 +114,8 @@ class ChannelSubscriptionMiddleware(BaseMiddleware):
                 reply_markup=keyboard,
             )
         return
+    
+    
 
     async def _handle_callback(
         self,

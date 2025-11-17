@@ -28,27 +28,39 @@ def get_main_menu_inline_keyboard(
         )
     )
 
+    # Используем plural для правильной формы слова "день"
+    inv_bonus_text = i18n_instance.plural(
+        lang,
+        settings.REFERRAL_BONUS_DAYS_INVITER_1_MONTH,
+        "day_forms"  # ключ в JSON с формами слова
+    )
+
     referral_button = InlineKeyboardButton(
-        text=_(key="menu_referral_inline"),
-        callback_data="main_action:referral")
-    promo_button = InlineKeyboardButton(
-        text=_(key="menu_apply_promo_button"),
-        callback_data="main_action:apply_promo")
-    builder.row(referral_button, promo_button)
+        text=_(key="menu_referral_inline", inv_bonus=inv_bonus_text),
+        callback_data="main_action:referral"
+    )
+    # Отключил кнопку промокода
+    # promo_button = InlineKeyboardButton(
+    #     text=_(key="menu_apply_promo_button"),
+    #     callback_data="main_action:apply_promo")
+    # builder.row(referral_button, promo_button)
 
-    language_button = InlineKeyboardButton(
-        text=_(key="menu_language_settings_inline"),
-        callback_data="main_action:language")
-    status_button_list = []
-    if settings.SERVER_STATUS_URL:
-        status_button_list.append(
-            InlineKeyboardButton(text=_(key="menu_server_status_button"),
-                                 url=settings.SERVER_STATUS_URL))
+    builder.row(referral_button)
 
-    if status_button_list:
-        builder.row(language_button, *status_button_list)
-    else:
-        builder.row(language_button)
+    # Отлючил кнопки статуса и выбора языка
+    # language_button = InlineKeyboardButton(
+    #     text=_(key="menu_language_settings_inline"),
+    #     callback_data="main_action:language")
+    # status_button_list = []
+    # if settings.SERVER_STATUS_URL:
+    #     status_button_list.append(
+    #         InlineKeyboardButton(text=_(key="menu_server_status_button"),
+    #                              url=settings.SERVER_STATUS_URL))
+
+    # if status_button_list:
+    #     builder.row(language_button, *status_button_list)
+    # else:
+    #     builder.row(language_button)
 
     if settings.SUPPORT_LINK:
         builder.row(
