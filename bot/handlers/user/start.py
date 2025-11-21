@@ -329,8 +329,11 @@ async def start_command_handler(message: types.Message,
 
     if ref_match:
         potential_referrer_id = int(ref_match.group(1))
-        if await user_dal.get_user_by_id(session, potential_referrer_id):
+        # Prevent self-referral: user cannot refer themselves
+        if potential_referrer_id != user_id and await user_dal.get_user_by_id(session, potential_referrer_id):
             referred_by_user_id = potential_referrer_id
+        elif potential_referrer_id == user_id:
+            logging.warning(f"User {user_id} attempted to use their own referral link. Self-referral prevented.")
     elif promo_match:
         promo_code_to_apply = promo_match.group(1)
         logging.info(f"User {user_id} started with promo code: {promo_code_to_apply}")
