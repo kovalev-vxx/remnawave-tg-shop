@@ -133,12 +133,12 @@ async def on_startup_configured(dispatcher: Dispatcher):
                 f"STARTUP: Failed to register mini app domain: {e}", exc_info=True
             )
 
-    if settings.START_COMMAND_DESCRIPTION:
+    if settings.MENU_COMMAND_DESCRIPTION:
         try:
             await bot.set_my_commands([
-                BotCommand(command="start", description=settings.START_COMMAND_DESCRIPTION)
+                BotCommand(command="menu", description=settings.MENU_COMMAND_DESCRIPTION)
             ])
-            logging.info("STARTUP: /start command description set.")
+            logging.info("STARTUP: /menu command description set.")
         except Exception as e:
             logging.error(f"STARTUP: Failed to set bot commands: {e}", exc_info=True)
 

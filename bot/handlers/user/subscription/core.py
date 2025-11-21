@@ -59,15 +59,15 @@ async def display_subscription_options(event: Union[types.Message, types.Callbac
 
     if isinstance(event, types.CallbackQuery):
         try:
-            await target_message_obj.edit_text(text_content, reply_markup=reply_markup)
+            await target_message_obj.edit_text(text_content, reply_markup=reply_markup, disable_web_page_preview=True)
         except Exception:
-            await target_message_obj.answer(text_content, reply_markup=reply_markup)
+            await target_message_obj.answer(text_content, reply_markup=reply_markup, disable_web_page_preview=True)
         try:
             await event.answer()
         except Exception:
             pass
     else:
-        await target_message_obj.answer(text_content, reply_markup=reply_markup)
+        await target_message_obj.answer(text_content, reply_markup=reply_markup, disable_web_page_preview=True)
 
 
 @router.callback_query(F.data == "main_action:subscribe")

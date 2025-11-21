@@ -490,6 +490,36 @@ async def start_command_handler(message: types.Message,
                          is_edit=False)
 
 
+@router.message(Command("menu"))
+async def menu_command_handler(message: types.Message,
+                               state: FSMContext,
+                               settings: Settings,
+                               i18n_data: dict,
+                               subscription_service: SubscriptionService,
+                               session: AsyncSession):
+    await state.clear()
+    current_lang = i18n_data.get("current_language", settings.DEFAULT_LANGUAGE)
+    i18n: Optional[JsonI18n] = i18n_data.get("i18n_instance")
+    _ = lambda key, **kwargs: i18n.gettext(current_lang, key, **kwargs) if i18n else key
+
+    user_id = message.from_user.id
+    db_user = await user_dal.get_user_by_id(session, user_id)
+
+    # Check channel subscription requirement
+    if not await ensure_required_channel_subscription(message, settings, i18n,
+                                                      current_lang, session,
+                                                      db_user):
+        return
+
+    # Send main menu without welcome message
+    await send_main_menu(message,
+                         settings,
+                         i18n_data,
+                         subscription_service,
+                         session,
+                         is_edit=False)
+
+
 @router.callback_query(F.data == "channel_subscription:verify")
 async def verify_channel_subscription_callback(
         callback: types.CallbackQuery,
