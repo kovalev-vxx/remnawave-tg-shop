@@ -47,6 +47,8 @@ def get_main_menu_inline_keyboard(
 
     builder.row(referral_button)
 
+
+
     # Отлючил кнопки статуса и выбора языка
     # language_button = InlineKeyboardButton(
     #     text=_(key="menu_language_settings_inline"),
@@ -63,9 +65,22 @@ def get_main_menu_inline_keyboard(
     #     builder.row(language_button)
 
     if settings.SUPPORT_LINK:
-        builder.row(
-            InlineKeyboardButton(text=_(key="menu_support_button"),
-                                 url=settings.SUPPORT_LINK))
+        support_button = InlineKeyboardButton(
+            text=_(key="menu_support_button"),
+            url=settings.SUPPORT_LINK
+        )
+    else:
+        support_button = None
+
+    faq_button = InlineKeyboardButton(
+        text=_(key="menu_faq_button"),
+        callback_data="main_action:faq"
+    )
+
+
+    buttons = [btn for btn in [faq_button, support_button] if btn is not None]
+    if buttons:
+        builder.row(*buttons)
 
     if settings.TERMS_OF_SERVICE_URL:
         builder.row(
@@ -84,6 +99,15 @@ def get_language_selection_keyboard(i18n_instance,
                    callback_data="set_lang_en")
     builder.button(text=f"🇷🇺 Русский {'✅' if current_lang == 'ru' else ''}",
                    callback_data="set_lang_ru")
+    builder.button(text=_(key="back_to_main_menu_button"),
+                   callback_data="main_action:back_to_main")
+    builder.adjust(1)
+    return builder.as_markup()
+
+
+def get_faq_keyboard(lang: str, i18n_instance) -> InlineKeyboardMarkup:
+    _ = lambda key, **kwargs: i18n_instance.gettext(lang, key, **kwargs)
+    builder = InlineKeyboardBuilder()
     builder.button(text=_(key="back_to_main_menu_button"),
                    callback_data="main_action:back_to_main")
     builder.adjust(1)

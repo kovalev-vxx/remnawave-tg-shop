@@ -688,6 +688,41 @@ async def main_action_callback_handler(
     elif action == "referral":
         await user_referral_handlers.referral_command_handler(
             callback, settings, i18n_data, referral_service, bot, session)
+    elif action == "faq":
+        current_lang = i18n_data.get("current_language", settings.DEFAULT_LANGUAGE)
+        i18n: Optional[JsonI18n] = i18n_data.get("i18n_instance")
+        _ = lambda key, **kwargs: i18n.gettext(current_lang, key, **kwargs) if i18n else key
+        
+        from bot.keyboards.inline.user_keyboards import get_faq_keyboard
+        faq_text = _("faq_text")
+        faq_keyboard = get_faq_keyboard(current_lang, i18n)
+        
+        try:
+            await callback.message.edit_text(
+                faq_text,
+                reply_markup=faq_keyboard,
+                parse_mode="HTML",
+                disable_web_page_preview=True
+            )
+            try:
+                await callback.answer()
+            except Exception:
+                pass
+        except Exception as e_edit:
+            logging.warning(
+                f"Could not edit FAQ message: {e_edit}. Sending new one."
+            )
+            if callback.message:
+                await callback.message.answer(
+                    faq_text,
+                    reply_markup=faq_keyboard,
+                    parse_mode="HTML",
+                    disable_web_page_preview=True
+                )
+            try:
+                await callback.answer()
+            except Exception:
+                pass
     elif action == "apply_promo":
         await user_promo_handlers.prompt_promo_code_input(
             callback, state, i18n_data, settings, session)

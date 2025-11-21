@@ -11,6 +11,8 @@
   "menu_my_subscription_inline": "🔐 My Subscription",
   "no_subscription_options_available": "Subscription issuance is not configured by the bot administrator",
   "menu_referral_inline": "🎁 +{inv_bonus}",
+  "menu_faq_button": "❓ FAQ",
+  "faq_text": "Frequently Asked Questions\n\nInformation with answers to frequently asked questions will be placed here.",
   "day_forms": ["day", "days", "days"],
   "referral_no_bonuses_configured": "Sorry, the referral program is currently disabled",
   "menu_apply_promo_button": "🎟 Promo Code",
