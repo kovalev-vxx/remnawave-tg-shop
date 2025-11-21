@@ -77,6 +77,7 @@ async def request_trial_confirmation_handler(
         await callback.message.edit_text(
             confirmation_text,
             reply_markup=confirmation_keyboard,
+            disable_web_page_preview=True
         )
         try:
             await callback.answer()

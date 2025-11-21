@@ -94,7 +94,7 @@ def get_trial_confirmation_keyboard(lang: str,
                                     i18n_instance) -> InlineKeyboardMarkup:
     _ = lambda key, **kwargs: i18n_instance.gettext(lang, key, **kwargs)
     builder = InlineKeyboardBuilder()
-    builder.button(text=_(key="yes_button"),
+    builder.button(text=_(key="trial_confirm_activate_button"),
                    callback_data="trial_action:confirm_activate")
     builder.button(text=_(key="back_to_main_menu_button"),
                    callback_data="main_action:back_to_main")
