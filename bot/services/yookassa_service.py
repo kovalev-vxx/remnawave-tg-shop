@@ -102,6 +102,9 @@ class YooKassaService:
 
         try:
             builder = PaymentRequestBuilder()
+            builder.set_payment_method_data({
+                "type": "sbp"
+            })
             builder.set_amount({
                 "value": str(round(amount, 2)),
                 "currency": currency.upper()
@@ -117,12 +120,12 @@ class YooKassaService:
             })
             builder.set_description(description)
             builder.set_metadata(metadata)
-            if save_payment_method:
-                # Ask YooKassa to save method for off-session charges
-                builder.set_save_payment_method(True)
-            if payment_method_id:
-                # Use a previously saved payment method for merchant-initiated payments
-                builder.set_payment_method_id(payment_method_id)
+            # if save_payment_method:
+            #     # Ask YooKassa to save method for off-session charges
+            #     builder.set_save_payment_method(True)
+            # if payment_method_id:
+            #     # Use a previously saved payment method for merchant-initiated payments
+            #     builder.set_payment_method_id(payment_method_id)
 
             receipt_items_list: List[Dict[str, Any]] = [{
                 "description":

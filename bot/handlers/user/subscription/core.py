@@ -457,19 +457,19 @@ async def toggle_autorenew_handler(
         return
 
     # Show confirmation popup and inline buttons
-    confirm_text = get_text("autorenew_confirm_enable") if enable else get_text("autorenew_confirm_disable")
-    kb = get_autorenew_confirm_keyboard(enable, sub.subscription_id, current_lang, i18n)
-    try:
-        await callback.message.edit_text(confirm_text, reply_markup=kb)
-    except Exception:
-        try:
-            await callback.message.answer(confirm_text, reply_markup=kb)
-        except Exception:
-            pass
-    try:
-        await callback.answer()
-    except Exception:
-        pass
+    # confirm_text = get_text("autorenew_confirm_enable") if enable else get_text("autorenew_confirm_disable")
+    # kb = get_autorenew_confirm_keyboard(enable, sub.subscription_id, current_lang, i18n)
+    # try:
+    #     await callback.message.edit_text(confirm_text, reply_markup=kb)
+    # except Exception:
+    #     try:
+    #         await callback.message.answer(confirm_text, reply_markup=kb)
+    #     except Exception:
+    #         pass
+    # try:
+    #     await callback.answer()
+    # except Exception:
+    #     pass
     return
 
 

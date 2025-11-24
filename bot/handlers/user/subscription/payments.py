@@ -132,12 +132,36 @@ async def _initiate_yk_payment(
 
     if payment_response_yk and payment_response_yk.get("confirmation_url"):
         pm = payment_response_yk.get("payment_method")
+        # Convert SDK object to dict if needed, or skip saving for SBP
+        pm_dict = None
+        if pm:
+            if isinstance(pm, dict):
+                pm_dict = pm
+            else:
+                # SDK object - try to extract attributes
+                try:
+                    pm_type = getattr(pm, 'type', None)
+                    # Skip saving for SBP as it doesn't support saved payment methods
+                    if pm_type and str(pm_type).lower() == 'sbp':
+                        pm_dict = None
+                    else:
+                        # For other types, try to convert to dict
+                        pm_dict = {
+                            "id": getattr(pm, 'id', None),
+                            "type": pm_type,
+                            "title": getattr(pm, 'title', None),
+                            "card": getattr(pm, 'card', None),
+                            "account_number": getattr(pm, 'account_number', None) or getattr(pm, 'account', None),
+                        }
+                except Exception:
+                    pm_dict = None
+        
         try:
-            if pm and pm.get("id"):
-                pm_type = pm.get("type")
-                title = pm.get("title")
-                card = pm.get("card") or {}
-                account_number = pm.get("account_number") or pm.get("account")
+            if pm_dict and pm_dict.get("id") and save_payment_method:
+                pm_type = pm_dict.get("type")
+                title = pm_dict.get("title")
+                card = pm_dict.get("card") or {}
+                account_number = pm_dict.get("account_number") or pm_dict.get("account")
                 if isinstance(card, dict) and (pm_type or "").lower() in {"bank_card", "bank-card", "card"}:
                     display_network = card.get("card_type") or title or "Card"
                     display_last4 = card.get("last4")
@@ -154,7 +178,7 @@ async def _initiate_yk_payment(
                 await user_billing_dal.upsert_yk_payment_method(
                     session,
                     user_id=user_id,
-                    payment_method_id=pm["id"],
+                    payment_method_id=pm_dict["id"],
                     card_last4=display_last4,
                     card_network=display_network,
                 )
@@ -162,7 +186,7 @@ async def _initiate_yk_payment(
                     await user_billing_dal.upsert_user_payment_method(
                         session,
                         user_id=user_id,
-                        provider_payment_method_id=pm["id"],
+                        provider_payment_method_id=pm_dict["id"],
                         provider="yookassa",
                         card_last4=display_last4,
                         card_network=display_network,
