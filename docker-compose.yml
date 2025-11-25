@@ -37,29 +37,29 @@ services:
       interval: 5s
       timeout: 5s
       retries: 20
-  remnawave-tg-shop-db-backup:
-    image: kartoza/pg-backup:17-3.5
-    container_name: remnawave-tg-shop-db-backup
-    depends_on:
-      - remnawave-tg-shop-db
-    env_file:
-      - .env
-    networks:
-      - remnawave-network
-    environment:
-      POSTGRES_HOST: remnawave-tg-shop-db
-      POSTGRES_PORT: 5432
-      RUN_AS_ROOT: true
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASS: ${POSTGRES_PASSWORD}
-      ARCHIVE_FILENAME: "$(date +%Y)/$(date +%B)/TG-BOT-DMP.$(date +%d-%B-%Y-%H-%M)"
-      DBLIST: postgres
-      CONSOLE_LOGGING: TRUE
-      CRON_SCHEDULE: "0 21,9 * * *" # каждая минута для теста
-      REMOVE_BEFORE: "7" # удалять старые бэкапы старше 7 дней
-    volumes:
-      - ./app-data/backups:/backups
-    restart: on-failure
+  # remnawave-tg-shop-db-backup:
+  #   image: kartoza/pg-backup:17-3.5
+  #   container_name: remnawave-tg-shop-db-backup
+  #   depends_on:
+  #     - remnawave-tg-shop-db
+  #   env_file:
+  #     - .env
+  #   networks:
+  #     - remnawave-network
+  #   environment:
+  #     POSTGRES_HOST: remnawave-tg-shop-db
+  #     POSTGRES_PORT: 5432
+  #     RUN_AS_ROOT: true
+  #     POSTGRES_USER: ${POSTGRES_USER}
+  #     POSTGRES_PASS: ${POSTGRES_PASSWORD}
+  #     ARCHIVE_FILENAME: "$(date +%Y)/$(date +%B)/TG-BOT-DMP.$(date +%d-%B-%Y-%H-%M)"
+  #     DBLIST: postgres
+  #     CONSOLE_LOGGING: TRUE
+  #     CRON_SCHEDULE: "0 21,9 * * *" # каждая минута для теста
+  #     REMOVE_BEFORE: "7" # удалять старые бэкапы старше 7 дней
+  #   volumes:
+  #     - ./app-data/backups:/backups
+  #   restart: on-failure
   remnawave-caddy:
     image: caddy:latest
     container_name: remnawave-caddy
