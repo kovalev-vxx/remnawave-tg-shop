@@ -1,3 +1,7 @@
 {$WEBHOOK_BASE_URL} {
+    request_body {
+        max_size 1MB
+    }
+
     reverse_proxy http://remnawave-tg-shop:8080
 }
