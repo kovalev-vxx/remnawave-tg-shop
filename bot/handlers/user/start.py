@@ -305,6 +305,7 @@ async def ensure_required_channel_subscription(
 @router.message(CommandStart(magic=F.args.regexp(r"^ref_(\d+)$").as_("ref_match")))
 @router.message(CommandStart(magic=F.args.regexp(r"^promo_(\w+)$").as_("promo_match")))
 @router.message(CommandStart(magic=F.args.regexp(r"^(?!ref_|promo_)([A-Za-z0-9_\-]{2,64})$").as_("ad_param_match")))
+@router.message(Command("menu"))
 async def start_command_handler(message: types.Message,
                                 state: FSMContext,
                                 settings: Settings,
@@ -436,9 +437,14 @@ async def start_command_handler(message: types.Message,
                                                       db_user):
         return
 
-    # Send welcome message if not disabled
-    if not settings.DISABLE_WELCOME_MESSAGE:
+    async def send_welcome_message():
+        if settings.DISABLE_WELCOME_MESSAGE:
+            return
+        if message.text == "/menu":
+            return
         await message.answer(_(key="welcome", user_name=hd.quote(user.full_name)))
+
+    await send_welcome_message()
 
     # Auto-apply promo code if provided via start parameter
     if promo_code_to_apply:
@@ -485,36 +491,6 @@ async def start_command_handler(message: types.Message,
             logging.error(f"Error auto-applying promo code '{promo_code_to_apply}' for user {user_id}: {e}")
             await session.rollback()
 
-    await send_main_menu(message,
-                         settings,
-                         i18n_data,
-                         subscription_service,
-                         session,
-                         is_edit=False)
-
-
-@router.message(Command("menu"))
-async def menu_command_handler(message: types.Message,
-                               state: FSMContext,
-                               settings: Settings,
-                               i18n_data: dict,
-                               subscription_service: SubscriptionService,
-                               session: AsyncSession):
-    await state.clear()
-    current_lang = i18n_data.get("current_language", settings.DEFAULT_LANGUAGE)
-    i18n: Optional[JsonI18n] = i18n_data.get("i18n_instance")
-    _ = lambda key, **kwargs: i18n.gettext(current_lang, key, **kwargs) if i18n else key
-
-    user_id = message.from_user.id
-    db_user = await user_dal.get_user_by_id(session, user_id)
-
-    # Check channel subscription requirement
-    if not await ensure_required_channel_subscription(message, settings, i18n,
-                                                      current_lang, session,
-                                                      db_user):
-        return
-
-    # Send main menu without welcome message
     await send_main_menu(message,
                          settings,
                          i18n_data,
