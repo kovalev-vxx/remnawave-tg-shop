@@ -10,7 +10,7 @@ from typing import Optional
 from config.settings import Settings
 from .panel_api_service import PanelApiService
 from bot.middlewares.i18n import JsonI18n
-from bot.keyboards.inline.user_keyboards import get_subscribe_only_markup, get_autorenew_cancel_keyboard
+from bot.keyboards.inline.user_keyboards import get_renew_subscription_only_markup, get_autorenew_cancel_keyboard, get_subscribe_only_markup
 from db.dal import user_dal
 from bot.utils.date_utils import add_months
 from datetime import datetime
@@ -197,7 +197,8 @@ class PanelWebhookService:
             lang = db_user.language_code if db_user and db_user.language_code else self.settings.DEFAULT_LANGUAGE
             first_name = db_user.first_name or f"User {user_id}" if db_user else f"User {user_id}"
 
-        markup = get_subscribe_only_markup(lang, self.i18n)
+        renew_markup = get_renew_subscription_only_markup(lang, self.i18n)
+        subscribe_markup = get_subscribe_only_markup(lang, self.i18n)
 
         if event_name in EVENT_MAP:
             days_left, msg_key = EVENT_MAP[event_name]
@@ -250,13 +251,13 @@ class PanelWebhookService:
                     user_id,
                     lang,
                     msg_key,
-                    reply_markup=markup,
+                    reply_markup=renew_markup,
                     user_name=first_name,
                     end_date=self._format_date_russian(user_payload.get("expireAt", "")),
                 )
         elif event_name == "user.expired":
             # Check if this is a tribute user that should be auto-renewed (regardless of notification settings)
-            auto_renewed = await self._handle_expired_subscription(session, user_id, user_payload, lang, markup, first_name)
+            auto_renewed = await self._handle_expired_subscription(session, user_id, user_payload, lang, subscribe_markup, first_name)
             
             # If auto-renewed via Tribute, suppress expiration notification. Otherwise, send it if enabled.
             if not auto_renewed and self.settings.SUBSCRIPTION_NOTIFY_ON_EXPIRE:
@@ -264,7 +265,7 @@ class PanelWebhookService:
                     user_id,
                     lang,
                     "subscription_expired_notification",
-                    reply_markup=markup,
+                    reply_markup=subscribe_markup,
                     user_name=first_name,
                     end_date=self._format_date_russian(user_payload.get("expireAt", "")),
                 )
@@ -273,7 +274,7 @@ class PanelWebhookService:
                 user_id,
                 lang,
                 "subscription_expired_yesterday_notification",
-                reply_markup=markup,
+                reply_markup=subscribe_markup,
                 user_name=first_name,
                 end_date=self._format_date_russian(user_payload.get("expireAt", "")),
             )
