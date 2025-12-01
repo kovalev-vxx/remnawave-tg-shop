@@ -13,6 +13,7 @@ from bot.middlewares.i18n import JsonI18n
 from bot.keyboards.inline.user_keyboards import get_subscribe_only_markup, get_autorenew_cancel_keyboard
 from db.dal import user_dal
 from bot.utils.date_utils import add_months
+from datetime import datetime
 
 EVENT_MAP = {
     "user.expires_in_72_hours": (3, "subscription_72h_notification"),
@@ -27,6 +28,21 @@ class PanelWebhookService:
         self.i18n = i18n
         self.async_session_factory = async_session_factory
         self.panel_service = panel_service
+
+    def _format_date_russian(self, date_input: str | datetime) -> str:
+        """Format date to Russian format DD.MM.YYYY"""
+        if isinstance(date_input, datetime):
+            return date_input.strftime('%d.%m.%Y')
+        elif isinstance(date_input, str):
+            # Try to parse ISO format (YYYY-MM-DD)
+            try:
+                if len(date_input) >= 10:
+                    date_str = date_input[:10]
+                    dt = datetime.strptime(date_str, '%Y-%m-%d')
+                    return dt.strftime('%d.%m.%Y')
+            except (ValueError, AttributeError):
+                pass
+        return date_input
 
     async def _send_message(
         self,
@@ -144,7 +160,7 @@ class PanelWebhookService:
                                "Новая дата окончания: {end_date}",
                         user_name=first_name,
                         months=last_tribute_duration,
-                        end_date=new_end_date.strftime('%Y-%m-%d')
+                        end_date=self._format_date_russian(new_end_date)
                     )
                     
                     try:
@@ -236,7 +252,7 @@ class PanelWebhookService:
                     msg_key,
                     reply_markup=markup,
                     user_name=first_name,
-                    end_date=user_payload.get("expireAt", "")[:10],
+                    end_date=self._format_date_russian(user_payload.get("expireAt", "")),
                 )
         elif event_name == "user.expired":
             # Check if this is a tribute user that should be auto-renewed (regardless of notification settings)
@@ -250,7 +266,7 @@ class PanelWebhookService:
                     "subscription_expired_notification",
                     reply_markup=markup,
                     user_name=first_name,
-                    end_date=user_payload.get("expireAt", "")[:10],
+                    end_date=self._format_date_russian(user_payload.get("expireAt", "")),
                 )
         elif event_name == "user.expired_24_hours_ago" and self.settings.SUBSCRIPTION_NOTIFY_AFTER_EXPIRE:
             await self._send_message(
@@ -259,7 +275,7 @@ class PanelWebhookService:
                 "subscription_expired_yesterday_notification",
                 reply_markup=markup,
                 user_name=first_name,
-                end_date=user_payload.get("expireAt", "")[:10],
+                end_date=self._format_date_russian(user_payload.get("expireAt", "")),
             )
 
     async def handle_webhook(self, raw_body: bytes, signature_header: Optional[str]) -> web.Response:
